@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Golden Radio Hour – Marathon Archive</title>
+  <meta name="description" content="Archive of Golden Radio Hour old time radio marathons and 12-hour livestreams.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050608;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #ffd369;
+    }
+    .marathon {
+      border: 1px solid #333;
+      padding: 16px;
+      margin-bottom: 24px;
+      border-radius: 8px;
+      background: #111318;
+    }
+    .meta {
+      font-size: 0.9rem;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+    iframe {
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+    .error {
+      color: #ff7676;
+      margin-top: 10px;
+    }
+    a {
+      color: #ffd369;
+    }
+  </style>
+</head>
+<body>
+  <h1>Golden Radio Hour – Marathon Archive</h1>
+  <p>
+    These marathons are automatically pulled from the official Golden Radio Hour
+    YouTube playlist.
+  </p>
+
+  <div id="marathon-list">Loading marathons…</div>
+  <div id="error" class="error"></div>
+
+  <script>
+    // 🔧 CHANGE THIS TO YOUR EXISTING YOUTUBE DATA API KEY
+    const API_KEY = "YOUR_YOUTUBE_API_KEY_HERE";
+
+    // ✅ Already set to your marathon playlist:
+    const PLAYLIST_ID = "PLdhjpeNwhEeBNJNaK-k1GqQLcaqejU-1E";
+
+    const listEl = document.getElementById("marathon-list");
+    const errorEl = document.getElementById("error");
+    const head = document.head || document.getElementsByTagName("head")[0];
+
+    async function fetchPlaylist(pageToken = "") {
+      const params = new URLSearchParams({
+        part: "snippet,contentDetails",
+        maxResults: "50",
+        playlistId: PLAYLIST_ID,
+        key: API_KEY,
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+
+      const url = "https://www.googleapis.com/youtube/v3/playlistItems?" + params.toString();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("YouTube API error: " + res.status);
+      return res.json();
+    }
+
+    function createMarathonItem(item) {
+      const videoId = item.contentDetails.videoId;
+      const title = item.snippet.title;
+      const description =
+        item.snippet.description ||
+        "Old time radio marathon from Golden Radio Hour.";
+      const publishedAt =
+        item.contentDetails.videoPublishedAt || item.snippet.publishedAt;
+      const dateText = publishedAt
+        ? new Date(publishedAt).toLocaleString()
+        : null;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "marathon";
+      wrapper.id = videoId;
+
+      const h2 = document.createElement("h2");
+      h2.textContent = title;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      if (dateText) {
+        meta.textContent = "Originally streamed: " + dateText;
+      }
+
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://www.youtube.com/embed/" + videoId;
+      iframe.title = title;
+      iframe.loading = "lazy";
+      iframe.setAttribute("allowfullscreen", "true");
+      iframe.setAttribute("frameborder", "0");
+
+      wrapper.appendChild(h2);
+      if (dateText) wrapper.appendChild(meta);
+      wrapper.appendChild(iframe);
+
+      listEl.appendChild(wrapper);
+
+      // --- Schema for this video ---
+      const thumbnailUrl =
+        "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg";
+      const embedUrl = "https://www.youtube.com/embed/" + videoId;
+      const pageBaseUrl = window.location.href.split("#")[0];
+
+      const schemaObject = {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "name": title,
+        "description": description,
+        "thumbnailUrl": [thumbnailUrl],
+        "embedUrl": embedUrl,
+        "url": pageBaseUrl + "#" + videoId,
+        "publisher": {
+          "@type": "Organization",
+          "name": "Golden Radio Hour",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.goldenradiohour.com/logo.png"
+          }
+        }
+        // If you want, you can force a 12-hour duration like this:
+        // "duration": "PT12H00M00S"
+      };
+
+      if (publishedAt) {
+        schemaObject.uploadDate = publishedAt;
+      }
+
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.text = JSON.stringify(schemaObject);
+      head.appendChild(script);
+    }
+
+    async function init() {
+      try {
+        listEl.textContent = "Loading marathons from YouTube…";
+
+        let pageToken = "";
+        let firstBatch = true;
+
+        do {
+          const data = await fetchPlaylist(pageToken);
+          if (firstBatch) {
+            listEl.textContent = "";
+            firstBatch = false;
+          }
+
+          (data.items || []).forEach(createMarathonItem);
+          pageToken = data.nextPageToken || "";
+        } while (pageToken);
+
+        if (!listEl.children.length) {
+          listEl.textContent =
+            "No marathons found in the playlist yet. Add videos to the playlist on YouTube and they will show here automatically.";
+        }
+      } catch (err) {
+        console.error(err);
+        listEl.textContent = "";
+        errorEl.textContent =
+          "Could not load marathons. Check your API key and playlist ID.";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
