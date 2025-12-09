@@ -3,71 +3,253 @@
 <head>
   <meta charset="UTF-8" />
   <title>Golden Radio Hour – Marathon Archive</title>
-  <meta name="description" content="Archive of Golden Radio Hour old time radio marathons and 12-hour livestreams.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Archive of Golden Radio Hour old time radio marathons and 12-hour livestreams." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --bg: #050608;
+      --bg-card: #111318;
+      --border: #333;
+      --accent: #ffd369;
+      --text-main: #f5f5f5;
+      --text-muted: #bbb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #050608;
-      color: #f5f5f5;
+      background: var(--bg);
+      color: var(--text-main);
       margin: 0;
       padding: 20px;
     }
-    h1, h2 {
-      color: #ffd369;
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto 20px auto;
     }
+
+    h1 {
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-size: 1.8rem;
+    }
+
+    p.lead {
+      margin-top: 0;
+      color: var(--text-muted);
+      max-width: 800px;
+      font-size: 0.98rem;
+    }
+
+    .controls {
+      max-width: 1100px;
+      margin: 0 auto 16px auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .controls label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .controls input[type="search"],
+    .controls select {
+      background: #191b22;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      min-width: 160px;
+    }
+
+    .controls input[type="search"]::placeholder {
+      color: #666;
+    }
+
+    .stats {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    #marathon-list {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
     .marathon {
-      border: 1px solid #333;
+      border: 1px solid var(--border);
       padding: 16px;
       margin-bottom: 24px;
       border-radius: 8px;
-      background: #111318;
+      background: var(--bg-card);
     }
+
+    .marathon h2 {
+      margin: 0 0 6px 0;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
     .meta {
-      font-size: 0.9rem;
-      color: #bbb;
+      font-size: 0.85rem;
+      color: var(--text-muted);
       margin-bottom: 8px;
     }
+
+    .tags {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
     iframe {
+      width: 100%;
       max-width: 100%;
       aspect-ratio: 16 / 9;
+      border-radius: 6px;
+      border: none;
+      display: block;
+      margin-bottom: 10px;
     }
+
+    .description {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin: 4px 0 8px 0;
+      white-space: pre-line;
+    }
+
+    .description.collapsed {
+      overflow: hidden;
+    }
+
+    .desc-toggle-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      padding: 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .links {
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
     .error {
       color: #ff7676;
       margin-top: 10px;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 0.9rem;
     }
-    a {
-      color: #ffd369;
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+      .controls {
+        align-items: flex-start;
+      }
+      .controls-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Golden Radio Hour – Marathon Archive</h1>
-  <p>
-    These marathons are automatically pulled from the official Golden Radio Hour
-    YouTube playlist.
-  </p>
+  <header>
+    <h1>Golden Radio Hour – Marathon Archive</h1>
+    <p class="lead">
+      A browsable archive of Golden Radio Hour marathons and 12-hour livestreams, automatically pulled
+      from the official Golden Radio Hour YouTube playlist.
+    </p>
+  </header>
 
-  <div id="marathon-list">Loading marathons…</div>
+  <section class="controls">
+    <div class="controls-group">
+      <label for="searchInput">Search:</label>
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Search by show name, episode, or description..."
+        autocomplete="off"
+      />
+    </div>
+    <div class="controls-group">
+      <label for="sortSelect">Sort by:</label>
+      <select id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="title-asc">Title A–Z</option>
+        <option value="title-desc">Title Z–A</option>
+      </select>
+    </div>
+    <div class="stats" id="statsText">
+      Loading marathons…
+    </div>
+  </section>
+
+  <main id="marathon-list">Loading marathons…</main>
   <div id="error" class="error"></div>
 
   <script>
-    // 🔧 CHANGE THIS TO YOUR EXISTING YOUTUBE DATA API KEY
-    const API_KEY = "AIzaSyAgghMp_YWDR5EbNWjqQHKdY-SPXEbIEuI";
-
+    // 🔧 SET THIS TO YOUR REAL YOUTUBE DATA API KEY
+    const API_KEY = "AIzaSyAgghMp_YWDR5EbNWjqQHKdY-SPXEbIEuI"; // e.g. "AIzaSyAgghMp_YWDR5EbNWjqQHKdY-SPXEbIEuI"
     // ✅ Already set to your marathon playlist:
     const PLAYLIST_ID = "PLdhjpeNwhEeBNJNaK-k1GqQLcaqejU-1E";
 
     const listEl = document.getElementById("marathon-list");
     const errorEl = document.getElementById("error");
+    const statsEl = document.getElementById("statsText");
     const head = document.head || document.getElementsByTagName("head")[0];
+
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect = document.getElementById("sortSelect");
+
+    let marathons = [];    // normalized data
+    let currentQuery = "";
+    let currentSort = "newest";
+    let schemaAdded = false;
 
     async function fetchPlaylist(pageToken = "") {
       const params = new URLSearchParams({
         part: "snippet,contentDetails",
         maxResults: "50",
         playlistId: PLAYLIST_ID,
-        key: API_KEY,
+        key: API_KEY
       });
       if (pageToken) params.set("pageToken", pageToken);
 
@@ -77,109 +259,249 @@
       return res.json();
     }
 
-    function createMarathonItem(item) {
-      const videoId = item.contentDetails.videoId;
-      const title = item.snippet.title;
-      const description =
-        item.snippet.description ||
-        "Old time radio marathon from Golden Radio Hour.";
+    function normalizeItem(item) {
+      const videoId = item.contentDetails?.videoId;
+      const title = item.snippet?.title || "Untitled Marathon";
+      const description = item.snippet?.description || "Old time radio marathon from Golden Radio Hour.";
       const publishedAt =
-        item.contentDetails.videoPublishedAt || item.snippet.publishedAt;
-      const dateText = publishedAt
-        ? new Date(publishedAt).toLocaleString()
-        : null;
+        item.contentDetails?.videoPublishedAt || item.snippet?.publishedAt || null;
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "marathon";
-      wrapper.id = videoId;
+      return {
+        videoId,
+        title,
+        description,
+        publishedAt,
+        // helpful for filters / tags later if needed
+        channelTitle: item.snippet?.videoOwnerChannelTitle || "Golden Radio Hour"
+      };
+    }
 
-      const h2 = document.createElement("h2");
-      h2.textContent = title;
-
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      if (dateText) {
-        meta.textContent = "Originally streamed: " + dateText;
-      }
-
-      const iframe = document.createElement("iframe");
-      iframe.src = "https://www.youtube.com/embed/" + videoId;
-      iframe.title = title;
-      iframe.loading = "lazy";
-      iframe.setAttribute("allowfullscreen", "true");
-      iframe.setAttribute("frameborder", "0");
-
-      wrapper.appendChild(h2);
-      if (dateText) wrapper.appendChild(meta);
-      wrapper.appendChild(iframe);
-
-      listEl.appendChild(wrapper);
-
-      // --- Schema for this video ---
-      const thumbnailUrl =
-        "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg";
-      const embedUrl = "https://www.youtube.com/embed/" + videoId;
+    function addSchemaForMarathons(list) {
+      if (schemaAdded) return; // avoid duplicates on re-render
       const pageBaseUrl = window.location.href.split("#")[0];
 
-      const schemaObject = {
-        "@context": "https://schema.org",
-        "@type": "VideoObject",
-        "name": title,
-        "description": description,
-        "thumbnailUrl": [thumbnailUrl],
-        "embedUrl": embedUrl,
-        "url": pageBaseUrl + "#" + videoId,
-        "publisher": {
-          "@type": "Organization",
-          "name": "Golden Radio Hour",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://www.goldenradiohour.com/logo.png"
-          }
-        }
-        // If you want, you can force a 12-hour duration like this:
-        // "duration": "PT12H00M00S"
-      };
+      list.forEach((m) => {
+        const thumbnailUrl = "https://i.ytimg.com/vi/" + m.videoId + "/hqdefault.jpg";
+        const embedUrl = "https://www.youtube.com/embed/" + m.videoId;
 
-      if (publishedAt) {
-        schemaObject.uploadDate = publishedAt;
+        const schemaObject = {
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          "name": m.title,
+          "description": m.description,
+          "thumbnailUrl": [thumbnailUrl],
+          "embedUrl": embedUrl,
+          "url": pageBaseUrl + "#" + m.videoId,
+          "publisher": {
+            "@type": "Organization",
+            "name": "Golden Radio Hour",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://www.goldenradiohour.com/logo.png"
+            }
+          }
+          // If you want to force 12-hour duration:
+          // "duration": "PT12H00M00S"
+        };
+
+        if (m.publishedAt) {
+          schemaObject.uploadDate = m.publishedAt;
+        }
+
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.text = JSON.stringify(schemaObject);
+        head.appendChild(script);
+      });
+
+      schemaAdded = true;
+    }
+
+    function sortMarathons(list) {
+      const sorted = [...list];
+      switch (currentSort) {
+        case "oldest":
+          sorted.sort((a, b) => {
+            const da = a.publishedAt ? Date.parse(a.publishedAt) : 0;
+            const db = b.publishedAt ? Date.parse(b.publishedAt) : 0;
+            return da - db;
+          });
+          break;
+        case "title-asc":
+          sorted.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case "title-desc":
+          sorted.sort((a, b) => b.title.localeCompare(a.title));
+          break;
+        case "newest":
+        default:
+          sorted.sort((a, b) => {
+            const da = a.publishedAt ? Date.parse(a.publishedAt) : 0;
+            const db = b.publishedAt ? Date.parse(b.publishedAt) : 0;
+            return db - da;
+          });
+          break;
+      }
+      return sorted;
+    }
+
+    function filterMarathons(list) {
+      if (!currentQuery.trim()) return list;
+      const q = currentQuery.toLowerCase();
+      return list.filter((m) => {
+        return (
+          m.title.toLowerCase().includes(q) ||
+          m.description.toLowerCase().includes(q) ||
+          (m.channelTitle && m.channelTitle.toLowerCase().includes(q))
+        );
+      });
+    }
+
+    function renderMarathons() {
+      if (!marathons.length) {
+        listEl.textContent = "No marathons found in the playlist yet.";
+        statsEl.textContent = "0 marathons found.";
+        return;
       }
 
-      const script = document.createElement("script");
-      script.type = "application/ld+json";
-      script.text = JSON.stringify(schemaObject);
-      head.appendChild(script);
+      const filtered = filterMarathons(marathons);
+      const sorted = sortMarathons(filtered);
+
+      listEl.innerHTML = "";
+
+      sorted.forEach((m) => {
+        const wrapper = document.createElement("article");
+        wrapper.className = "marathon";
+        wrapper.id = m.videoId;
+
+        // Title
+        const h2 = document.createElement("h2");
+        h2.textContent = m.title;
+        wrapper.appendChild(h2);
+
+        // Meta line
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const bits = [];
+        if (m.publishedAt) {
+          bits.push("Originally streamed: " + new Date(m.publishedAt).toLocaleString());
+        }
+        if (m.channelTitle) {
+          bits.push("Channel: " + m.channelTitle);
+        }
+        meta.textContent = bits.join(" • ");
+        wrapper.appendChild(meta);
+
+        // Tags placeholder (future-proof: show count / simple tag)
+        const tags = document.createElement("div");
+        tags.className = "tags";
+        tags.textContent = "Marathon • Old Time Radio • 12-hour stream (approx.)";
+        wrapper.appendChild(tags);
+
+        // Embed
+        const iframe = document.createElement("iframe");
+        iframe.src = "https://www.youtube.com/embed/" + m.videoId;
+        iframe.title = m.title;
+        iframe.loading = "lazy";
+        iframe.setAttribute("allowfullscreen", "true");
+        wrapper.appendChild(iframe);
+
+        // Description (collapsible)
+        const fullDesc = m.description.trim();
+        const maxChars = 400;
+        const isLong = fullDesc.length > maxChars;
+        const shortDesc = isLong ? fullDesc.slice(0, maxChars) + "…" : fullDesc;
+
+        const descEl = document.createElement("p");
+        descEl.className = "description collapsed";
+        descEl.textContent = shortDesc;
+        descEl.dataset.full = fullDesc;
+        descEl.dataset.short = shortDesc;
+        wrapper.appendChild(descEl);
+
+        if (isLong) {
+          const toggleBtn = document.createElement("button");
+          toggleBtn.type = "button";
+          toggleBtn.className = "desc-toggle-btn";
+          toggleBtn.textContent = "Show full description";
+          toggleBtn.addEventListener("click", () => {
+            const isCollapsed = descEl.textContent === descEl.dataset.short;
+            if (isCollapsed) {
+              descEl.textContent = descEl.dataset.full;
+              toggleBtn.textContent = "Show less";
+            } else {
+              descEl.textContent = descEl.dataset.short;
+              toggleBtn.textContent = "Show full description";
+            }
+          });
+          wrapper.appendChild(toggleBtn);
+        }
+
+        // Links
+        const links = document.createElement("div");
+        links.className = "links";
+        const watchLink = document.createElement("a");
+        watchLink.href = "https://www.youtube.com/watch?v=" + m.videoId;
+        watchLink.target = "_blank";
+        watchLink.rel = "noopener noreferrer";
+        watchLink.textContent = "Watch on YouTube";
+        links.appendChild(watchLink);
+        wrapper.appendChild(links);
+
+        listEl.appendChild(wrapper);
+      });
+
+      statsEl.textContent =
+        "Showing " + filtered.length + " of " + marathons.length + " marathons.";
     }
 
     async function init() {
       try {
         listEl.textContent = "Loading marathons from YouTube…";
+        statsEl.textContent = "Loading marathons…";
 
         let pageToken = "";
-        let firstBatch = true;
+        let items = [];
 
         do {
           const data = await fetchPlaylist(pageToken);
-          if (firstBatch) {
-            listEl.textContent = "";
-            firstBatch = false;
-          }
-
-          (data.items || []).forEach(createMarathonItem);
+          items = items.concat(data.items || []);
           pageToken = data.nextPageToken || "";
         } while (pageToken);
 
-        if (!listEl.children.length) {
-          listEl.textContent =
-            "No marathons found in the playlist yet. Add videos to the playlist on YouTube and they will show here automatically.";
+        marathons = items
+          .map(normalizeItem)
+          .filter((m) => !!m.videoId);
+
+        if (!marathons.length) {
+          listEl.textContent = "No marathons found in the playlist yet.";
+          statsEl.textContent = "0 marathons found.";
+          return;
         }
+
+        // Default sort: newest first
+        marathons = sortMarathons(marathons);
+        addSchemaForMarathons(marathons);
+        renderMarathons();
       } catch (err) {
         console.error(err);
         listEl.textContent = "";
         errorEl.textContent =
-          "Could not load marathons. Check your API key and playlist ID.";
+          "Could not load marathons. Check your API key, playlist ID, and that YouTube Data API v3 is enabled.";
+        statsEl.textContent = "Error loading marathons.";
       }
     }
+
+    // Event listeners for search & sort
+    searchInput.addEventListener("input", (e) => {
+      currentQuery = e.target.value || "";
+      renderMarathons();
+    });
+
+    sortSelect.addEventListener("change", (e) => {
+      currentSort = e.target.value;
+      renderMarathons();
+    });
 
     init();
   </script>
